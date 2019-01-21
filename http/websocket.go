@@ -6,28 +6,33 @@ import (
 	"log"
 	"net/http"
 	"teso_task/domain"
+	"time"
+)
+
+const (
+	closeGracePeriod = 1000
 )
 
 var upgrader = websocket.Upgrader{}
 
-func Websocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func WebsocketHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
 	}
 
-	defer func() {
-		if err := c.Close(); err != nil {
-			log.Print("close:", err)
-		}
-	}()
+	defer closeWebsocketConnection(c)
 
+	socketMessageLoop(c)
+}
+
+func socketMessageLoop(c *websocket.Conn) {
 	for {
 		mt, message, err := c.ReadMessage()
 
-		if mt == websocket.BinaryMessage {
-			_ := c.Close()
+		if mt != websocket.TextMessage {
+			closeWebsocketConnection(c)
 			break
 		}
 
@@ -43,5 +48,18 @@ func Websocket(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			log.Println("write:", err)
 			break
 		}
+	}
+}
+
+// gracefully close websocket connection
+func closeWebsocketConnection(c *websocket.Conn) {
+	if err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
+		log.Print("close: ", err)
+	}
+
+	time.Sleep(closeGracePeriod)
+
+	if err := c.Close(); err != nil {
+		log.Print("close: ", err)
 	}
 }
