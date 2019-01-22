@@ -4,8 +4,10 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -15,7 +17,9 @@ func TestWebsocketUpgradesToVersionAtleast13(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/ws", nil)
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		WebsocketHandler(w, r, httprouter.Params{})
+		logger := log.New(os.Stdout, "http_server ", log.LstdFlags | log.Lshortfile)
+
+		NewWebsocket(logger).WebsocketHandler(w, r, httprouter.Params{})
 	})
 	handler.ServeHTTP(rr,req)
 	socketVersion, err := strconv.Atoi(rr.Header()["Sec-Websocket-Version"][0])
@@ -56,7 +60,9 @@ func TestWebsocketClosesAfterClientInitiatesClose(t *testing.T) {
 
 func createHttpServer() *httptest.Server {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		WebsocketHandler(w, r, httprouter.Params{})
+		logger := log.New(os.Stdout, "http_server ", log.LstdFlags | log.Lshortfile)
+
+		NewWebsocket(logger).WebsocketHandler(w, r, httprouter.Params{})
 	}))
 
 	return s

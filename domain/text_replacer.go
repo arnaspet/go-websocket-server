@@ -2,7 +2,7 @@ package domain
 
 import "bytes"
 
-var (
+const (
 	replaceFrom = "?"
 	replaceTo = "!"
 )

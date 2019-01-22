@@ -2,10 +2,9 @@ package http
 
 import (
 	"fmt"
+	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
-	"os"
-	"github.com/julienschmidt/httprouter"
 )
 
 type server struct {
@@ -13,12 +12,12 @@ type server struct {
 	router *httprouter.Router
 }
 
-func New() *server {
+func NewServer(logger *log.Logger) *server {
 	s := &server{
-		log.New(os.Stdout, "http_server ", log.LstdFlags | log.Lshortfile),
+		logger,
 		httprouter.New(),
 	}
-	s.routes()
+	s.InitRoutes(logger)
 
 	return s
 }

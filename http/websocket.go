@@ -13,9 +13,19 @@ const (
 	closeGracePeriod = 1000
 )
 
+type Websocket struct {
+	logger *log.Logger
+}
+
 var upgrader = websocket.Upgrader{}
 
-func WebsocketHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func NewWebsocket(logger *log.Logger) *Websocket {
+	return &Websocket{
+		logger,
+	}
+}
+
+func (websocket *Websocket) WebsocketHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
