@@ -1,0 +1,12 @@
+version: '2.4'
+
+services:
+  webserver:
+    container_name: teso_task
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    environment:
+      - PORT=3342
+    ports:
+      - "3342:3342"
