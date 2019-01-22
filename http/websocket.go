@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
-	"log"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"teso_task/domain"
 	"time"
@@ -14,62 +14,62 @@ const (
 )
 
 type Websocket struct {
-	logger *log.Logger
+	logger *logrus.Logger
 }
 
 var upgrader = websocket.Upgrader{}
 
-func NewWebsocket(logger *log.Logger) *Websocket {
+func NewWebsocket(logger *logrus.Logger) *Websocket {
 	return &Websocket{
 		logger,
 	}
 }
 
-func (websocket *Websocket) WebsocketHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (ws *Websocket) WebsocketHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		ws.logger.Error("upgrade: ", err)
 		return
 	}
 
-	defer closeWebsocketConnection(c)
+	defer ws.closeWebsocketConnection(c)
 
-	socketMessageLoop(c)
+	ws.socketMessageLoop(c)
 }
 
-func socketMessageLoop(c *websocket.Conn) {
+func (ws *Websocket) socketMessageLoop(c *websocket.Conn) {
 	for {
 		mt, message, err := c.ReadMessage()
 
 		if mt != websocket.TextMessage {
-			closeWebsocketConnection(c)
+			ws.closeWebsocketConnection(c)
 			break
 		}
 
 		if err != nil {
-			log.Println("read:", err)
+			ws.logger.Error("read: ", err)
 			break
 		}
-		log.Printf("recv: %s", message)
+		ws.logger.Debugf("recv: %s", message)
 
 		err = c.WriteMessage(mt, domain.ReplaceBytes(message))
 
 		if err != nil {
-			log.Println("write:", err)
+			ws.logger.Error("write: ", err)
 			break
 		}
 	}
 }
 
-// gracefully close websocket connection
-func closeWebsocketConnection(c *websocket.Conn) {
+func (ws *Websocket) closeWebsocketConnection(c *websocket.Conn) {
+	ws.logger.Debug("Gracefully closing websocket connection")
 	if err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
-		log.Print("close: ", err)
+		ws.logger.Warn("close: ", err)
 	}
 
 	time.Sleep(closeGracePeriod)
 
 	if err := c.Close(); err != nil {
-		log.Print("close: ", err)
+		ws.logger.Warn("close: ", err)
 	}
 }

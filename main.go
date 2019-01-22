@@ -2,16 +2,28 @@ package main
 
 import (
 	"flag"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
+	"strings"
 	"teso_task/http"
 )
 
 func main() {
 	port := flag.Uint("port", 3001, "Port on which http server is run")
 	flag.Parse()
-	logger := log.New(os.Stdout, "http_server ", log.LstdFlags | log.Lshortfile)
 
-	s := http.NewServer(logger)
+	s := http.NewServer(initLogger())
 	s.Start(uint16(*port))
+}
+
+func initLogger() *logrus.Logger {
+	logger := logrus.New()
+
+	debug, ok := os.LookupEnv("DEBUG")
+
+	if ok && strings.ToLower(debug) == "true" {
+		logger.SetLevel(logrus.DebugLevel)
+	}
+
+	return logger
 }

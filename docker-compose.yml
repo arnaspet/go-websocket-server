@@ -8,5 +8,6 @@ services:
       dockerfile: ./Dockerfile
     environment:
       - PORT=3342
+      - DEBUG=TRUE
     ports:
       - "3342:3342"
