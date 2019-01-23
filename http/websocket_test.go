@@ -1,15 +1,16 @@
 package http
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus/hooks/test"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/gorilla/websocket"
+	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus/hooks/test"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWebsocketUpgradesToVersionAtleast13(t *testing.T) {
@@ -20,7 +21,7 @@ func TestWebsocketUpgradesToVersionAtleast13(t *testing.T) {
 
 		NewWebsocket(logger).WebsocketHandler(w, r, httprouter.Params{})
 	})
-	handler.ServeHTTP(rr,req)
+	handler.ServeHTTP(rr, req)
 	socketVersion, err := strconv.Atoi(rr.Header()["Sec-Websocket-Version"][0])
 	assert.NoError(t, err)
 

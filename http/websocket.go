@@ -1,12 +1,13 @@
 package http
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/arnaspet/teso_task/domain"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"time"
 )
 
 const (
