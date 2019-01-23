@@ -1,11 +1,11 @@
 package http
 
 import (
+	"github.com/arnaspet/teso_task/domain"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"teso_task/domain"
 	"time"
 )
 

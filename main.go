@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
+	"github.com/arnaspet/teso_task/http"
 	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
-	"teso_task/http"
 )
 
 func main() {
