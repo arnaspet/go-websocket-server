@@ -40,6 +40,18 @@ func (ws *Websocket) PublisherWebsocketHandler(w http.ResponseWriter, r *http.Re
 	ws.socketMessageLoop(c)
 }
 
+func (ws *Websocket) SubscriberWebsocketHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		ws.logger.Error("upgrade: ", err)
+		return
+	}
+	ws.pool.RegisterConnectionAsSubscriber(c)
+	defer ws.closeWebsocketConnection(c)
+
+	ws.socketMessageLoop(c)
+}
+
 func (ws *Websocket) socketMessageLoop(c *websocket.Conn) {
 	for {
 		mt, message, err := c.ReadMessage()

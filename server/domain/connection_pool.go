@@ -8,6 +8,7 @@ import (
 type ConnectionPool struct {
 	logger *logrus.Logger
 	publishers []*Publisher
+	subscribers []*Subscriber
 	seq uint
 }
 
@@ -28,6 +29,18 @@ func(cp *ConnectionPool) RegisterConnectionAsPublisher(conn *websocket.Conn) {
 
 	cp.publishers = append(cp.publishers, publisher)
 	cp.logger.Debugf("#%d Publisher registered to pool", id)
+}
+
+
+func(cp *ConnectionPool) RegisterConnectionAsSubscriber(conn *websocket.Conn) {
+	id := cp.generateId()
+	subscriber := &Subscriber{
+		conn,
+		id,
+	}
+
+	cp.subscribers = append(cp.subscribers, subscriber)
+	cp.logger.Debugf("#%d Subscriber registered to pool", id)
 }
 
 func(cp *ConnectionPool) generateId() uint {
