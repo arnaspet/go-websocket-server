@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/arnaspet/teso_task/server/domain"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -18,8 +19,9 @@ func TestWebsocketUpgradesToVersionAtleast13(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger, _ := test.NewNullLogger()
+		pool := domain.NewConnectionPool(logger)
 
-		NewWebsocket(logger).WebsocketHandler(w, r, httprouter.Params{})
+		NewWebsocket(logger, pool).PublisherWebsocketHandler(w, r, httprouter.Params{})
 	})
 	handler.ServeHTTP(rr, req)
 	socketVersion, err := strconv.Atoi(rr.Header()["Sec-Websocket-Version"][0])
@@ -61,8 +63,9 @@ func TestWebsocketClosesAfterClientInitiatesClose(t *testing.T) {
 func createHttpServer() *httptest.Server {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger, _ := test.NewNullLogger()
+		pool := domain.NewConnectionPool(logger)
 
-		NewWebsocket(logger).WebsocketHandler(w, r, httprouter.Params{})
+		NewWebsocket(logger, pool).PublisherWebsocketHandler(w, r, httprouter.Params{})
 	}))
 
 	return s

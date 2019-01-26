@@ -1,7 +1,11 @@
 package http
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/arnaspet/teso_task/server/domain"
+	"github.com/sirupsen/logrus"
+)
 
 func (s *server) InitRoutes(logger *logrus.Logger) {
-	s.router.GET("/ws", NewWebsocket(logger).WebsocketHandler)
+	connectionPool := domain.NewConnectionPool(logger)
+	s.router.GET("/ws/publish", NewWebsocket(logger, connectionPool).PublisherWebsocketHandler)
 }
