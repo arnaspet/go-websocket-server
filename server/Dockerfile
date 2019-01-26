@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-c"]
 WORKDIR /go/src/teso_task
 ENV PORT=3333
 
-COPY . .
+COPY .. .
 RUN dep ensure
 RUN go install -v ./...
 

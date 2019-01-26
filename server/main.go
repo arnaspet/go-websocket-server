@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/arnaspet/teso_task/http"
+	"github.com/arnaspet/teso_task/server/http"
 	"github.com/sirupsen/logrus"
 )
 

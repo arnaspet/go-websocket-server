@@ -4,8 +4,8 @@ services:
   webserver:
     container_name: teso_task
     build:
-      context: ./
-      dockerfile: ./Dockerfile
+      context: ..
+      dockerfile: Dockerfile
     environment:
       - PORT=3342
       - DEBUG=TRUE
