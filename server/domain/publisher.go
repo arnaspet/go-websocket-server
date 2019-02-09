@@ -20,9 +20,20 @@ func (p *Publisher) getId() uint {
 	return p.id
 }
 
-func(p *Publisher) BroadcastMessage(to []ConnectionHolder, message []byte) {
-	for _, receiver := range to {
-		receiver.getConnection().WriteMessage(websocket.TextMessage, message)
+func(p *Publisher) broadcastMessage(message []byte) {
+	messageToSend := ReplaceBytes(message)
+
+	sendMessage := func(subscriber *Subscriber, message []byte) {
+		p.logger.Debugf("Publishing message to subscriber %v", subscriber.id)
+		err := subscriber.getConnection().WriteMessage(websocket.TextMessage, message)
+
+		if err != nil {
+			p.logger.Error("write: ", err)
+		}
+	}
+
+	for subscriber := range p.pool.subscribers {
+		go sendMessage(subscriber, messageToSend)
 	}
 }
 
@@ -30,25 +41,17 @@ func (p *Publisher) initMessageHandler() {
 	for {
 		mt, message, err := p.conn.ReadMessage()
 
+		if err != nil {
+			p.logger.Error("read: ", err)
+			break
+		}
+
 		if mt != websocket.TextMessage {
 			p.pool.closeWebsocketConnection(p)
 			break
 		}
 
-		if err != nil {
-			p.logger.Error("read: ", err)
-			break
-		}
-		p.logger.Debugf("recv: %s", message)
-
-		for _, subscriber := range p.pool.subscribers {
-			p.logger.Printf("Publishing message to subscriber %v", subscriber.id)
-			err = subscriber.getConnection().WriteMessage(mt, ReplaceBytes(message))
-
-			if err != nil {
-				p.logger.Error("write: ", err)
-				break
-			}
-		}
+		p.logger.Debugf("Message from publisher #%d received: %s", p.id, message)
+		p.broadcastMessage(message)
 	}
 }

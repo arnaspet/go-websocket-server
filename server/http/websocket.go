@@ -42,27 +42,3 @@ func (ws *Websocket) SubscriberWebsocketHandler(w http.ResponseWriter, r *http.R
 
 	ws.pool.InitSubscriber(c)
 }
-
-func (ws *Websocket) socketMessageLoop(c *websocket.Conn) {
-	//for {
-	//	mt, message, err := c.ReadMessage()
-	//
-	//	if mt != websocket.TextMessage {
-	//		ws.closeWebsocketConnection(c)
-	//		break
-	//	}
-	//
-	//	if err != nil {
-	//		ws.logger.Error("read: ", err)
-	//		break
-	//	}
-	//	ws.logger.Debugf("recv: %s", message)
-	//
-	//	err = c.WriteMessage(mt, domain.ReplaceBytes(message))
-	//
-	//	if err != nil {
-	//		ws.logger.Error("write: ", err)
-	//		break
-	//	}
-	//}
-}
