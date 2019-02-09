@@ -10,6 +10,7 @@ type Subscriber struct {
 	conn *websocket.Conn
 	logger *logrus.Logger
 	id uint
+	queue chan []byte
 }
 
 
@@ -19,6 +20,26 @@ func (s *Subscriber) getConnection() *websocket.Conn {
 
 func (s *Subscriber) getId() uint {
 	return s.id
+}
+
+func (s *Subscriber) receiveMessage(message []byte) {
+	s.queue <- message
+}
+
+func (s *Subscriber) initMessageSender() {
+	go func() {
+		for {
+			select {
+			case msg := <-s.queue:
+				s.logger.Debugf("Sending message to subscriber %v: %s", s.id, msg)
+				err := s.conn.WriteMessage(websocket.TextMessage, msg)
+
+				if err != nil {
+					s.logger.Error("write: ", err)
+				}
+			}
+		}
+	}()
 }
 
 func (s *Subscriber) initMessageHandler() {

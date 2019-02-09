@@ -63,6 +63,7 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 		conn,
 		cp.logger,
 		id,
+		make(chan []byte),
 	}
 	defer cp.closeWebsocketConnection(subscriber)
 
@@ -71,6 +72,7 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 	cp.subscribersMutex.Unlock()
 	cp.logger.Debugf("#%d Subscriber registered to pool", id)
 
+	subscriber.initMessageSender()
 	subscriber.initMessageHandler()
 }
 

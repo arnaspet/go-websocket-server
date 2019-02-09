@@ -23,17 +23,10 @@ func (p *Publisher) getId() uint {
 func(p *Publisher) broadcastMessage(message []byte) {
 	messageToSend := ReplaceBytes(message)
 
-	sendMessage := func(subscriber *Subscriber, message []byte) {
-		p.logger.Debugf("Publishing message to subscriber %v", subscriber.id)
-		err := subscriber.getConnection().WriteMessage(websocket.TextMessage, message)
-
-		if err != nil {
-			p.logger.Error("write: ", err)
-		}
-	}
-
+	p.pool.subscribersMutex.RLock()
+	defer p.pool.subscribersMutex.RUnlock()
 	for subscriber := range p.pool.subscribers {
-		go sendMessage(subscriber, messageToSend)
+		subscriber.receiveMessage(messageToSend)
 	}
 }
 
