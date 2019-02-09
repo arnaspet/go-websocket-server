@@ -6,7 +6,6 @@ package main
 
 import (
 	"flag"
-	"github.com/icrowley/fake"
 	"log"
 	"net/url"
 	"os"
@@ -25,7 +24,7 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	u := url.URL{Scheme: "ws", Host: *addr, Path: "/ws/publish"}
+	u := url.URL{Scheme: "ws", Host: *addr, Path: "/ws/subscribe"}
 	log.Printf("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
@@ -44,25 +43,14 @@ func main() {
 				log.Println("read:", err)
 				return
 			}
-			log.Printf("recv: %s", message)
+			log.Printf("Receive: %s", message)
 		}
 	}()
-
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
 
 	for {
 		select {
 		case <-done:
 			return
-		case <-ticker.C:
-			message :=  []byte(fake.Color())
-			log.Printf("Sending message: %s", message)
-			err := c.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Println("write:", err)
-				return
-			}
 		case <-interrupt:
 			log.Println("interrupt")
 
