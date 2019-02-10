@@ -1,13 +1,21 @@
-version: '2.4'
+version: '3'
 
 services:
-  webserver:
-    container_name: teso_task
+  server:
     build:
-      context: ..
-      dockerfile: Dockerfile
-    environment:
-      - PORT=3342
-      - DEBUG=TRUE
-    ports:
-      - "3342:3342"
+      context: ./server
+    command: ["-port", "${PORT}", "-debug"]
+
+  publisher:
+    build:
+      context: ./publisher
+    depends_on:
+      - server
+    command: ["-addr", "server:${PORT}"]
+
+  subscriber:
+    build:
+      context: ./subscriber
+    depends_on:
+      - server
+    command: ["-addr", "server:${PORT}"]

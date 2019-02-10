@@ -1,13 +1,14 @@
-FROM golang:1.11
+FROM golang:1.11 as builder
 
 RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-SHELL ["/bin/bash", "-c"]
 
-WORKDIR /go/src/teso_task
-ENV PORT=3333
+WORKDIR /go/src/github.com/arnaspet/teso_task/server
 
-COPY .. .
+COPY . .
 RUN dep ensure
-RUN go install -v ./...
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /bin/server .
 
-CMD ["/bin/bash", "-c", "teso_task -port $PORT"]
+
+FROM scratch
+COPY --from=builder /bin/server /bin/server
+ENTRYPOINT ["/bin/server"]

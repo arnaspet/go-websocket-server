@@ -29,10 +29,6 @@
   name = "github.com/gorilla/websocket"
   version = "1.4.0"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/icrowley/fake"
-
 [prune]
   go-tests = true
   unused-packages = true
