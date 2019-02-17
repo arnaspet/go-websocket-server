@@ -79,10 +79,12 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 func (cp *ConnectionPool) closeWebsocketConnection(ch ConnectionHolder) {
 	cp.unregisterFromPool(ch)
 	cp.logger.Debug("Gracefully closing websocket connection")
-	if err := ch.getConnection().WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")); err != nil {
-		cp.logger.Warn("close: ", err)
+	closeMessage := &Message{
+		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
+		websocket.CloseMessage,
 	}
 
+	ch.receiveMessage(closeMessage)
 	time.Sleep(closeGracePeriod)
 
 	if err := ch.getConnection().Close(); err != nil {
