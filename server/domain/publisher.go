@@ -2,22 +2,23 @@ package domain
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
 )
 
 type Publisher struct {
 	pool *ConnectionPool
-	conn *websocket.Conn
-	logger *logrus.Logger
-	id uint
+	conn *Connection
 }
 
 func (p *Publisher) getConnection() *websocket.Conn {
-	return p.conn
+	return p.conn.websocketConn
 }
 
 func (p *Publisher) getId() uint {
-	return p.id
+	return p.conn.id
+}
+
+func (p *Publisher) receiveMessage(message []byte) {
+	p.conn.receiveMessage(message)
 }
 
 func(p *Publisher) broadcastMessage(message []byte) {
@@ -32,10 +33,10 @@ func(p *Publisher) broadcastMessage(message []byte) {
 
 func (p *Publisher) initMessageHandler() {
 	for {
-		mt, message, err := p.conn.ReadMessage()
+		mt, message, err := p.getConnection().ReadMessage()
 
 		if err != nil {
-			p.logger.Error("read: ", err)
+			p.conn.logger.Error("read: ", err)
 			break
 		}
 
@@ -44,7 +45,7 @@ func (p *Publisher) initMessageHandler() {
 			break
 		}
 
-		p.logger.Debugf("Message from publisher #%d received: %s", p.id, message)
+		p.conn.logger.Debugf("Message from publisher #%d received: %s", p.conn.id, message)
 		p.broadcastMessage(message)
 	}
 }

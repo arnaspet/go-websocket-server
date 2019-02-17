@@ -11,11 +11,6 @@ const (
 	closeGracePeriod = 1000
 )
 
-type ConnectionHolder interface {
-	getConnection() *websocket.Conn
-	getId() uint
-}
-
 type ConnectionPool struct {
 	logger *logrus.Logger
 	seq uint
@@ -41,9 +36,12 @@ func(cp *ConnectionPool) InitPublisher(conn *websocket.Conn) {
 	id := cp.generateId()
 	publisher := &Publisher{
 		cp,
-		conn,
-		cp.logger,
-		id,
+		&Connection{
+			conn,
+			cp.logger,
+			id,
+			make(chan []byte),
+		},
 	}
 	defer cp.closeWebsocketConnection(publisher)
 
@@ -60,10 +58,12 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 	id := cp.generateId()
 	subscriber := &Subscriber{
 		cp,
-		conn,
-		cp.logger,
-		id,
-		make(chan []byte),
+		&Connection{
+			conn,
+			cp.logger,
+			id,
+			make(chan []byte),
+		},
 	}
 	defer cp.closeWebsocketConnection(subscriber)
 
@@ -72,7 +72,7 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 	cp.subscribersMutex.Unlock()
 	cp.logger.Debugf("#%d Subscriber registered to pool", id)
 
-	subscriber.initMessageSender()
+	subscriber.conn.initMessageSender()
 	subscriber.initMessageHandler()
 }
 
