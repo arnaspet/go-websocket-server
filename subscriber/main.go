@@ -9,28 +9,35 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	addr = flag.String("addr", "localhost:3001", "http service address")
-	path = flag.String("path", "/ws/subscribe", "http service path for subscribing")
+	addr  = flag.String("addr", "localhost:3001", "http service address")
+	path  = flag.String("path", "/ws/subscribe", "http service path for subscribing")
+	debug = flag.Bool("debug", false, "Should output be debugged")
 )
 
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
+	logger := initLogger(*debug)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
 	u := url.URL{Scheme: "ws", Host: *addr, Path: *path}
-	log.Printf("connecting to %s", u.String())
+	logger.Infof("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		log.Fatal("dial:", err)
+		logger.Fatal("dial: ", err)
 	}
-	defer c.Close()
+	defer func() {
+		if err := c.Close(); err != nil {
+			logger.Fatal("close: ", err)
+		}
+	}()
 
 	done := make(chan struct{})
 
@@ -39,10 +46,10 @@ func main() {
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				logger.Error("read: ", err)
 				return
 			}
-			log.Printf("Receive: %s", message)
+			logger.Debugf("Receive: %s", message)
 		}
 	}()
 
@@ -51,13 +58,13 @@ func main() {
 		case <-done:
 			return
 		case <-interrupt:
-			log.Println("interrupt")
+			logger.Info("interrupt")
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
-				log.Println("write close:", err)
+				logger.Error("write close: ", err)
 				return
 			}
 			select {
@@ -67,4 +74,14 @@ func main() {
 			return
 		}
 	}
+}
+
+func initLogger(debug bool) *logrus.Logger {
+	logger := logrus.New()
+
+	if debug {
+		logger.SetLevel(logrus.DebugLevel)
+	}
+
+	return logger
 }
