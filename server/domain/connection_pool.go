@@ -36,12 +36,7 @@ func(cp *ConnectionPool) InitPublisher(conn *websocket.Conn) {
 	id := cp.generateId()
 	publisher := &Publisher{
 		cp,
-		&Connection{
-			conn,
-			cp.logger,
-			id,
-			make(chan *Message),
-		},
+		NewConnection(conn, cp.logger, id, make(chan *Message)),
 	}
 	defer cp.closeWebsocketConnection(publisher)
 
@@ -58,12 +53,7 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 	id := cp.generateId()
 	subscriber := &Subscriber{
 		cp,
-		&Connection{
-			conn,
-			cp.logger,
-			id,
-			make(chan *Message),
-		},
+		NewConnection(conn, cp.logger, id, make(chan *Message)),
 	}
 	defer cp.closeWebsocketConnection(subscriber)
 
@@ -72,7 +62,6 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 	cp.subscribersMutex.Unlock()
 	cp.logger.Debugf("#%d Subscriber registered to pool", id)
 
-	subscriber.conn.initMessageSender()
 	subscriber.initMessageHandler()
 }
 

@@ -23,6 +23,14 @@ type Connection struct {
 	queue         chan *Message
 }
 
+func NewConnection(websocketConn *websocket.Conn, logger *logrus.Logger, id uint, queue chan *Message) *Connection {
+	connection := &Connection{websocketConn: websocketConn, logger: logger, id: id, queue: queue}
+	connection.initMessageSender()
+
+	return connection
+}
+
+
 func (s *Connection) getConnection() *websocket.Conn {
 	return s.websocketConn
 }
