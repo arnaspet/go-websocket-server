@@ -17,12 +17,15 @@ func (p *Publisher) getId() uint {
 	return p.conn.id
 }
 
-func (p *Publisher) receiveMessage(message []byte) {
+func (p *Publisher) receiveMessage(message *Message) {
 	p.conn.receiveMessage(message)
 }
 
-func(p *Publisher) broadcastMessage(message []byte) {
-	messageToSend := ReplaceBytes(message)
+func(p *Publisher) broadcastMessage(message *Message) {
+	messageToSend := &Message{
+		ReplaceBytes(message.content),
+		websocket.TextMessage,
+	}
 
 	p.pool.subscribersMutex.RLock()
 	defer p.pool.subscribersMutex.RUnlock()
@@ -46,6 +49,9 @@ func (p *Publisher) initMessageHandler() {
 		}
 
 		p.conn.logger.Debugf("Message from publisher #%d received: %s", p.conn.id, message)
-		p.broadcastMessage(message)
+		p.broadcastMessage(&Message{
+			message,
+			websocket.TextMessage,
+		})
 	}
 }

@@ -13,7 +13,7 @@ func (s *Subscriber) getConnection() *websocket.Conn {
 	return s.conn.getConnection()
 }
 
-func (s *Subscriber) receiveMessage(message []byte) {
+func (s *Subscriber) receiveMessage(message *Message) {
 	s.conn.receiveMessage(message)
 }
 

@@ -40,7 +40,7 @@ func(cp *ConnectionPool) InitPublisher(conn *websocket.Conn) {
 			conn,
 			cp.logger,
 			id,
-			make(chan []byte),
+			make(chan *Message),
 		},
 	}
 	defer cp.closeWebsocketConnection(publisher)
@@ -62,7 +62,7 @@ func(cp *ConnectionPool) InitSubscriber(conn *websocket.Conn) {
 			conn,
 			cp.logger,
 			id,
-			make(chan []byte),
+			make(chan *Message),
 		},
 	}
 	defer cp.closeWebsocketConnection(subscriber)
