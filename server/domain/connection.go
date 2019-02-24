@@ -1,8 +1,8 @@
 package domain
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
 )
 
 type ConnectionHolder interface {

@@ -2,12 +2,13 @@ package main
 
 import (
 	"flag"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/arnaspet/teso_task/server/http"
-	"github.com/sirupsen/logrus"
 )
 
 var (
-	port = flag.Uint("port", 3001, "Port on which http server is run")
+	port  = flag.Uint("port", 3001, "Port on which http server is run")
 	debug = flag.Bool("debug", false, "Should output be debugged")
 )
 

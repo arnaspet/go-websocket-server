@@ -1,17 +1,17 @@
 package http
 
 import (
+	"net/http"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/arnaspet/teso_task/server/domain"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus"
-	"net/http"
 )
-
 
 type Websocket struct {
 	logger *logrus.Logger
-	pool *domain.ConnectionPool
+	pool   *domain.ConnectionPool
 }
 
 var upgrader = websocket.Upgrader{}

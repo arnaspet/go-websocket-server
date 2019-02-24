@@ -1,16 +1,17 @@
 package http
 
 import (
-	"github.com/arnaspet/teso_task/server/domain"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/arnaspet/teso_task/server/domain"
+
+	"github.com/Sirupsen/logrus/hooks/test"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 )
 
