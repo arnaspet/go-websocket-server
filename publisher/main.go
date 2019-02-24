@@ -2,83 +2,58 @@ package main
 
 import (
 	"flag"
-	"github.com/icrowley/fake"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/Sirupsen/logrus"
+
 	"github.com/gorilla/websocket"
 )
 
-
 var (
-	addr = flag.String("addr", "localhost:3001", "http service address")
-	path = flag.String("path", "/ws/publish", "http service path for publishing")
+	addr  = flag.String("addr", "localhost:3001", "http service address")
+	path  = flag.String("path", "/ws/publish", "http service path for publishing")
+	debug = flag.Bool("debug", false, "Should output be debugged")
 )
-
 
 func main() {
 	flag.Parse()
-	log.SetFlags(0)
+	logger := initLogger(*debug)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
+	c := initWebsocketConnection(logger)
+
+	done := make(chan struct{})
+	ticker := time.NewTicker(time.Second)
+
+	publisher := NewPublisher(logger, c, done, interrupt, ticker)
+	publisher.Start()
+}
+
+func initWebsocketConnection(logger *logrus.Logger) *websocket.Conn {
 	u := url.URL{Scheme: "ws", Host: *addr, Path: *path}
-	log.Printf("connecting to %s", u.String())
+
+	logger.Infof("connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
-	defer c.Close()
 
-	done := make(chan struct{})
+	return c
+}
 
-	go func() {
-		defer close(done)
-		for {
-			_, message, err := c.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				return
-			}
-			log.Printf("recv: %s", message)
-		}
-	}()
+func initLogger(debug bool) *logrus.Logger {
+	logger := logrus.New()
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-done:
-			return
-		case <-ticker.C:
-			message :=  []byte(fake.Color())
-			log.Printf("Sending message: %s", message)
-			err := c.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Println("write:", err)
-				return
-			}
-		case <-interrupt:
-			log.Println("interrupt")
-
-			// Cleanly close the connection by sending a close message and then
-			// waiting (with timeout) for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("write close:", err)
-				return
-			}
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
-			return
-		}
+	if debug {
+		logger.SetLevel(logrus.DebugLevel)
 	}
+
+	return logger
 }
