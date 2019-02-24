@@ -46,9 +46,7 @@ func NewPublisher(logger *logrus.Logger, conn *websocket.Conn, done chan struct{
 
 func (p *publisher) Start() {
 	defer func() {
-		err := p.conn.Close()
-
-		if err != nil {
+		if err := p.conn.Close(); err != nil {
 			p.logger.Error("close error: ", err)
 		}
 	}()
