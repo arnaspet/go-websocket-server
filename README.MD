@@ -13,8 +13,4 @@ docker-compose up --scale subscriber=5
 ```
 
 ## TODO
-* Publish only when there is subscribers listening on server
-* Publisher & subscriber better logging
-* Fix race condition on exiting websocket
-* Reuse logic of publisher & subscriber with composition
 * Add tests
