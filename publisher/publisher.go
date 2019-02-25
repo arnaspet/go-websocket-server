@@ -65,7 +65,7 @@ func (p *publisher) initMainLoop() {
 				continue
 			}
 
-			message := []byte(fake.Color())
+			message := []byte(fake.Color() + "?")
 			p.logger.Infof("Sending message: %s", message)
 			err := p.conn.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
