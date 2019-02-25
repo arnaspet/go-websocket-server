@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"sync/atomic"
 	"time"
@@ -98,26 +97,26 @@ func (p *publisher) initReceiveLoop() {
 		for {
 			_, message, err := p.conn.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				p.logger.Error("read:", err)
 				return
 			}
-			log.Printf("recv: %s", message)
+			p.logger.Debugf("recv: %s", message)
 
 			var f interface{}
 			err = json.Unmarshal(message, &f)
 			decodedMessage := f.(map[string]interface{})
 
 			if err != nil {
-				log.Println("json:", err)
+				p.logger.Error("json:", err)
 			}
 
 			switch int(decodedMessage["Code"].(float64)) {
 			case noSubscribersCode:
-				log.Println("Got do not send command!")
+				p.logger.Debug("Got do not send command!")
 				atomic.StoreInt32(&p.state, stateWaiting)
 
 			case subscribersListeningCode:
-				log.Println("Got a send command!")
+				p.logger.Debug("Got a send command!")
 				atomic.StoreInt32(&p.state, stateSending)
 			}
 		}
