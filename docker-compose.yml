@@ -11,7 +11,7 @@ services:
       context: ./publisher
     depends_on:
       - server
-    command: ["-addr", "server:${PORT}"]
+    command: ["-addr", "server:${PORT}", "-debug"]
 
   subscriber:
     build:
