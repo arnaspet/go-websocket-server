@@ -3,7 +3,7 @@
 Using websockets publisher sends a message every second to server if there is subscribers.
 Server fanouts them to subscribers.
 
-##Flow:
+## Flow:
 
 ```
                                                                                                           +------------------------+
